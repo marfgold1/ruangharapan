@@ -1,0 +1,176 @@
+body, html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	background-color: #000;
+	color: #fff;
+	font-family: Monospace;
+	font-size: 13px;
+	line-height: 24px;
+	overscroll-behavior: none;
+	overflow: hidden;
+}
+
+a {
+	color: #ff0;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+button {
+	cursor: pointer;
+	text-transform: uppercase;
+}
+
+a, button, input, select {
+	pointer-events: auto;
+}
+
+.dg.ac {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	z-index: 2 !important; /* TODO Solve this in HTML */
+}
+
+#overlay {
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0,0,0,0.7);
+}
+
+	#overlay button {
+		background: #ffffff;
+		border: 0;
+		color: #000000;
+		padding: 16px 20px;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+#notSupported {
+	width: 50%;
+	margin: auto;
+	background-color: #f00;
+	margin-top: 20px;
+	padding: 10px;
+}
+
+#three {
+	position: absolute;
+}
+
+#tooltip {
+	position: absolute;
+	color: #fff;
+	border: grey solid 1px;
+	backdrop-filter: blur(10px);
+	background: rgba(0,0,0,0.7);
+	border-radius: 10px;
+	max-width: 20vw;
+	z-index: 10;
+	overflow-wrap: break-word;
+	overflow-wrap: anywhere;
+}
+
+#tooltip-name {
+	text-align: center;
+}
+
+.m {
+	margin: 1rem;
+}
+
+#controls {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	z-index: 1;
+}
+
+.backdrop-light {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	z-index: 10;
+	display: none;
+	background: rgba(0,0,0,0);
+	transition: background 300ms ease;
+}
+
+.container {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	display: grid;
+}
+
+.info-bar {
+	position: absolute;
+	z-index: 10;
+	transform: translateX(0);
+	background: rgb(20,20,20);
+	height: 100%;
+	width: 30vw;
+	left: 100vw;
+	transition: transform 300ms ease;
+}
+
+.info {
+	top: 0px;
+	display: grid;
+	box-sizing: border-box;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	z-index: 5; /* TODO Solve this in HTML */
+	grid-auto-flow: column;
+}
+
+.a-top {
+	align-self: start;
+}
+
+.a-bottom {
+	align-self: end;
+}
+
+.j-right {
+	justify-self: end;
+}
+
+.j-center {
+	justify-self: center;
+}
+
+.m-0 {
+	margin: 0;
+}
+
+.right {
+	align-self: flex-end;
+}
+
+.w-100 {
+	width: 100%;
+}
+
+.o-y {
+	overflow-y: auto;
+}

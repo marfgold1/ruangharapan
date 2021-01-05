@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - interactive lines</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #f0f0f0;
+				color: #444;
+			}
+			a {
+				color: #08f;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="backdrop-light" id="light"></div>
+		<div class="info-bar o-y" id="info-bar-panel">
+			<div class="m">
+				<a href="#" id="info-bar-close">❌ Tutup</a>
+				<h1>💌 Ruang Harapan</h1>
+				<hr>
+				<div id="menu-harapan" hidden>
+					<form id="form-harapan" enctype="multipart/form-data" method="POST">
+						<label for="name">Nama</label> <br />
+						<input class="w-100" type="text" name="name" placeholder="Nama" maxlength="20" required /><br />
+						<label for="message">Pesan</label><br />
+						<textarea class="w-100" name="message" placeholder="Pesan" rows="8" maxlength="250" required></textarea>
+						<input type="submit" value="Submit Harapan" />
+					</form>
+					<p id="status-harapan" hidden>Sedang menyimpan form kamu...</p>
+				</div>
+				<div id="menu-about" hidden>
+					<p>❓ Sebuah project iseng dimana saya cukup burn out dan demot terhadap kuliah. Kemudian saya pikir mungkin
+						saya bisa membuat  sebuah ruang virtual berisikan harapan saya dan melihat harapan orang lain untuk
+						terus hidup. Bisa dibilang sebagai tempat saya untuk memotivasi diri sendiri agar mengingatkan saya
+						<i>a reason to keep moving forward, even if its not for your own sake.</i><br>
+						<b>-amar</b>
+					</p>
+					<h6><i>PS: gausah baku-baku amat, mau shitpost juga boleh</i></h6>
+					<hr>
+					<h4>⚙️ Powered by Three.js and Firebase</h4>
+				</div>
+			</div>
+		</div>
+		<div id="tooltip" hidden>
+			<h2 id="tooltip-name" class="m"></h2>
+			<hr>
+			<p id="tooltip-message" class="m"></p>
+		</div>
+		<div id="controls">
+		</div>
+		<div class="container">
+			<div class="info a-top m">
+				<div>
+				</div>
+				<div class="j-center">
+					<p class="m-0">Ruang Harapan</p>
+				</div>
+				<div class="j-right">
+					<a href="#" id="info-bar-open-harapan">+ Buat Harapan</a>
+				</div>
+			</div>
+			<div class="info a-bottom m">
+				<div>
+					<a href="#" id="info-bar-open-about">Tentang Project</a>
+				</div>
+				<div class="j-right">
+					<p class="m-0" id="info-text">Bruh</p>
+				</div>
+			</div>
+		</div>
+		<script src="app.js"></script>
+	</body>
+</html>

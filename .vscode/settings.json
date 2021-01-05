@@ -1,0 +1,12 @@
+{
+    "files.autoSave": "off",
+    "liveServer.settings.ignoreFiles": [
+        "node_modules/**",
+        "src/**",
+        ".vscode/**",
+        "**/*.scss",
+        "**/*.sass",
+        "**/*.ts"
+    ],
+    "liveServer.settings.wait": 1000,
+}
