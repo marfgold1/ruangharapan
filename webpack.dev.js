@@ -29,6 +29,5 @@ module.exports = {
       "util": false,
       "fs": false,
     }
-  },
-  watch: true
+  }
 };

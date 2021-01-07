@@ -7,7 +7,7 @@ body {
 	margin: 0;
 	background-color: #000;
 	color: #fff;
-	font-family: Monospace;
+	font-family: monospace;
 	font-size: 13px;
 	line-height: 24px;
 	overscroll-behavior: none;
@@ -30,6 +30,7 @@ button {
 
 a, button, input, select {
 	pointer-events: auto;
+	font-family: monospace;
 }
 
 .dg.ac {
@@ -40,28 +41,6 @@ a, button, input, select {
 	z-index: 2 !important; /* TODO Solve this in HTML */
 }
 
-#overlay {
-	position: absolute;
-	z-index: 2;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: rgba(0,0,0,0.7);
-}
-
-	#overlay button {
-		background: #ffffff;
-		border: 0;
-		color: #000000;
-		padding: 16px 20px;
-		text-transform: uppercase;
-		cursor: pointer;
-	}
-
 #notSupported {
 	width: 50%;
 	margin: auto;
@@ -70,8 +49,8 @@ a, button, input, select {
 	padding: 10px;
 }
 
-#three {
-	position: absolute;
+#list {
+	padding-inline-start: 1rem;
 }
 
 #tooltip {
@@ -82,7 +61,7 @@ a, button, input, select {
 	background: rgba(0,0,0,0.7);
 	border-radius: 10px;
 	max-width: 20vw;
-	z-index: 10;
+	z-index: 6;
 	overflow-wrap: break-word;
 	overflow-wrap: anywhere;
 }
@@ -93,6 +72,10 @@ a, button, input, select {
 
 .m {
 	margin: 1rem;
+}
+
+.p {
+	padding: 2rem;
 }
 
 #controls {
@@ -119,7 +102,8 @@ a, button, input, select {
 	display: grid;
 }
 
-.info-bar {
+#info-bar-panel {
+	overflow-y: auto;
 	position: absolute;
 	z-index: 10;
 	transform: translateX(0);
@@ -128,6 +112,8 @@ a, button, input, select {
 	width: 30vw;
 	left: 100vw;
 	transition: transform 300ms ease;
+	overflow-wrap: break-word;
+	overflow-wrap: anywhere;
 }
 
 .info {
@@ -141,6 +127,15 @@ a, button, input, select {
 	pointer-events: none;
 	z-index: 5; /* TODO Solve this in HTML */
 	grid-auto-flow: column;
+}
+
+@media only screen and (max-width: 768px) {
+	#info-bar-panel {
+		width: 100vw;
+	}
+	.d-sm-none {
+		display: none!important;
+	}
 }
 
 .a-top {
@@ -169,8 +164,4 @@ a, button, input, select {
 
 .w-100 {
 	width: 100%;
-}
-
-.o-y {
-	overflow-y: auto;
 }

@@ -1,7 +1,6 @@
 import './main.css';
 
 import firebase from 'firebase/app';
-import 'firebase/analytics';
 import 'firebase/database';
 const firebaseConfig = {
     apiKey: "AIzaSyAysud3LYywY0HQhG4MAWcnqwxXgbuamT0",
@@ -14,18 +13,27 @@ const firebaseConfig = {
     measurementId: "G-PVK8MNL8CW"
 };
 var app = firebase.initializeApp(firebaseConfig);
-app.analytics();
 var db = app.database();
 var msgDbRef = db.ref('messages');
 function addMessage(data){
+    console.log(data.name);
+    if(!data.name.match('^[A-Za-z0-9 ]+$')){
+        formharapan.hidden = false;
+        statusharapan.hidden = true;
+        alert(`error: Nama terdiri dari karakter ilegal. Gunakan huruf, angka, dan spasi (a-z,A-Z,0-9, ) saja`);
+        return;
+    }
     msgDbRef.push()
     .set(data)
-    .then((snapshot) => {
+    .then(() => {
         formharapan.reset();
         var cnt = 60; // timer
+        statusharapan.innerText = `Berhasil menyimpan harapan kamu!\r\n`;
+        statusharapan.innerText += `Kamu punya ${cnt} detik sebelum mengirimkan harapan yang lain.`;
         var timer = setInterval(function(){
-            statusharapan.innerText = `Berhasil menyimpan harapan kamu! Kamu punya ${cnt} detik sebelum mengirimkan harapan yang lain.`;
             cnt--;
+            statusharapan.innerText = `Berhasil menyimpan harapan kamu!\r\n`;
+            statusharapan.innerText += `Kamu punya ${cnt} detik sebelum mengirimkan harapan yang lain.`;
             if(cnt < 0){
                 statusharapan.hidden = true;
                 formharapan.hidden = false;
@@ -33,35 +41,22 @@ function addMessage(data){
             }
         }, 1000);
     }, (error) => {
-        formharapan.hidden = statusharapan.hidden = false;
+        formharapan.hidden = false;
+        statusharapan.hidden = true;
         alert(`error: ${error}`);
     });
 }
-
-msgDbRef.on('child_added', (a)=>{
-    /** @type {{message: string, name: string}} */
-    var data = a.val();
-    new Geometry(
-        data.name,
-        data.message,
-        a.key,
-        new THREE.Vector3(Math.random()*100-50, Math.random()*100-50, Math.random()*100-50),
-        color.setHex( Math.random() * 0xffffff )
-    );
-})
 
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 /** @type {THREE.PerspectiveCamera} */
 let camera;
-let scene, renderer, stats;
-
-//const amount = parseInt( window.location.search.substr( 1 ) ) || 10;
+let scene, renderer;
 
 const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2( 1, 1 );
-const mouseScreen = new THREE.Vector2(1,1);
+const mouse = new THREE.Vector2( -1, -1 );
+const mouseScreen = new THREE.Vector2(-1,-1);
 
 const color = new THREE.Color();
 var Clock = new THREE.Clock();
@@ -74,21 +69,40 @@ var tooltip = {
 var info = document.getElementById("info-text");
 var infobar = {
     menu: {
-        harapan: {
-            button: document.getElementById("info-bar-open-harapan"),
-            dom: document.getElementById("menu-harapan"),
-            name: "harapan",
+        form: {
+            button: document.getElementById("info-bar-open-form"),
+            dom: document.getElementById("menu-form"),
+            name: "form"
         },
         about: {
             button: document.getElementById("info-bar-open-about"),
             dom: document.getElementById("menu-about"),
             name: "about"
-        }
+        },
+        harapan: {
+            dom: document.getElementById("menu-harapan"),
+            name: "harapan",
+            dname: document.getElementById("h-name"),
+            dmessage: document.getElementById("h-mess"),
+        },
+        howtouse: {
+            button: document.getElementById("info-bar-open-howtouse"),
+            dom: document.getElementById("menu-howtouse"),
+            name: "howtouse"
+        },
     },
     panel: document.getElementById("info-bar-panel"),
-    close: document.getElementById("info-bar-close"),
+    close: [
+        document.getElementById("info-bar-close"),
+        document.getElementById("light")
+    ],
     status: false,
     lastmenu: ""
+}
+function setHarapan(name, message){
+    const h = infobar.menu.harapan;
+    h.dname.innerText = name;
+    h.dmessage.innerText = message;
 }
 var lightDOM = {
     dom: document.getElementById("light"),
@@ -101,9 +115,12 @@ lightDOM.dom.addEventListener("transitionend", function(){
 })
 for (var k in infobar.menu){
     let v = infobar.menu[k];
-    v.button.addEventListener("click", ()=>{toggleInfobar(true, v.name);});
+    if(v.button)
+        v.button.addEventListener("click", ()=>{toggleInfobar(true, v.name);}, false);
 }
-infobar.close.addEventListener("click", ()=>toggleInfobar(false));
+infobar.close.map((ev)=>{
+    ev.addEventListener("click", ()=>toggleInfobar(false), false);
+})
 function toggleInfobar(val, menu=""){
     if(infobar.status && !val){
         infobar.panel.style.transform = "translateX(0)";
@@ -118,9 +135,11 @@ function toggleInfobar(val, menu=""){
             infobar.lastmenu = menu;
         }
         infobar.panel.hidden = false;
-        infobar.panel.style.transform = "translateX(-30vw)";
+        infobar.panel.style.transform = `translateX(-${getComputedStyle(infobar.panel).width})`;
         infobar.status = true;
         toggleLight(val);
+        if(infobar.menu[menu].onOpen)
+            infobar.menu[menu].onOpen(data ? data : null);
     }
 }
 function toggleLight(val){
@@ -147,29 +166,117 @@ formharapan.addEventListener("submit", function(ev){
 
 var mouseDirty = false;
 
+import { BufferGeometry, Sphere, Box3, Texture, Color, BufferAttribute  } from 'three';
+window.THREE = { ...(window).THREE, BufferGeometry, Sphere, Box3, Texture, Color, BufferAttribute };
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
+var loadFont = require('load-bmfont');
+/** Buat text baru
+ * @param {string} text Text yang akan ditulis
+ * @returns {THREE.Mesh} Mesh yang dibuat untuk teks
+ */
+var TextGeometry = (text)=>{};
+loadFont('consola-msdf.json', function(err, font){
+    var textureLoader = new THREE.TextureLoader();
+    textureLoader.load('consola.png', function (texture) {
+        const MSDFShader = function (opt) {
+            opt = opt || {};
+            var opacity = typeof opt.opacity === 'number' ? opt.opacity : 1;
+            var alphaTest = typeof opt.alphaTest === 'number' ? opt.alphaTest : 0.0001;
+            var precision = opt.precision || 'highp';
+            var color = opt.color;
+            var map = opt.map;
+            var negate = typeof opt.negate === 'boolean' ? opt.negate : true;
+          
+            // remove to satisfy r73
+            delete opt.map;
+            delete opt.color;
+            delete opt.precision;
+            delete opt.opacity;
+            delete opt.negate;
+          
+            return Object.assign({
+                uniforms: {
+                    opacity: { type: 'f', value: opacity },
+                    map: { type: 't', value: map || new THREE.Texture() },
+                    color: { type: 'c', value: new THREE.Color(color) }
+                },
+                vertexShader: [
+                    '#version 300 es',
+                    'in vec2 uv;',
+                    'in vec4 position;',
+                    'uniform mat4 projectionMatrix;',
+                    'uniform mat4 modelViewMatrix;',
+                    'out vec2 vUv;',
+                    'void main() {',
+                    'vUv = uv;',
+                    'gl_Position = projectionMatrix * modelViewMatrix * position;',
+                    '}'
+                ].join('\n'),
+                fragmentShader: [
+                    '#version 300 es',
+                    '#ifdef GL_OES_standard_derivatives',
+                    '#extension GL_OES_standard_derivatives : enable',
+                    '#endif',
+                    'precision ' + precision + ' float;',
+                    'uniform float opacity;',
+                    'uniform vec3 color;',
+                    'uniform sampler2D map;',
+                    'in vec2 vUv;',
+                    'out vec4 myOutputColor;',
+                    'float median(float r, float g, float b) {',
+                    '  return max(min(r, g), min(max(r, g), b));',
+                    '}',                
+                    'void main() {',
+                    '  vec3 s = ' + (negate ? '1.0 - ' : '') + 'texture(map, vUv).rgb;',
+                    '  float sigDist = median(s.r, s.g, s.b) - 0.5;',
+                    '  float alpha = clamp(sigDist/fwidth(sigDist) + 0.5, 0.0, 1.0);',
+                    '  myOutputColor = vec4(color.xyz, alpha * opacity);',
+                    alphaTest === 0
+                        ? ''
+                        : '  if (myOutputColor.a < ' + alphaTest + ') discard;',
+                    '}'
+                ].join('\n')
+            }, opt);
+        };
+        const material = new THREE.RawShaderMaterial(MSDFShader({
+            map: texture,
+            transparent: true,
+            precision: "mediump",
+            negate: false,
+            color: 0xffffff
+        }));
+        const createGeometry = require('three-bmfont-text');
+        function create(text){
+            const geometry = createGeometry({
+                font: font,
+                text: text
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(0.2, -0.2, -0.2);
+            return mesh;
+        }
+        TextGeometry = create;
+        msgDbRef.on('child_added', (a)=>{
+            const data = a.val();
+            const pos = new THREE.Vector3(Math.random()*400-200, Math.random()*500-250, Math.random()*500-250);
+            new Geometry(
+                data.name,
+                data.message,
+                a.key,
+                pos
+            );
+        });
+    });
+});
+
 class Geometry {
     static Count = 0;
-    static Master = new THREE.InstancedMesh(new THREE.CylinderBufferGeometry(0.5, 0.5, 3), new THREE.MeshStandardMaterial(), 10000);
+    static TextOffset = new THREE.Vector3(8, 0, 0);
+    static Master = new THREE.InstancedMesh(new THREE.CylinderBufferGeometry(3, 3, 15), new THREE.MeshPhongMaterial(), 5000);
      /** @type {Geometry[]} */
     static Instances = [];
     #object;
-
-    /**
-     * Ubah ukuran maksimal penampungan geometri
-     * @param {number} size Ukuran maksimum geometri yang baru
-     */
-    static ResizeGeometry(size){
-        delete Geometry.Master;
-        Geometry.Master = new THREE.InstancedMesh(new THREE.IcosahedronGeometry( 0.5, 3 ), new THREE.MeshPhongMaterial(), size);
-    }
-
-    /**
-     * Mengubah ukuran maksimum geometri dari `multiplier` kali sebelumnya
-     * @param {number} multiplier Kelipatan ukuran dari yang sebelumnya
-     */
-    static EnlargeGeometry(multiplier = 10){
-        Geometry.ResizeGeometry(Geometry.Master.count*multiplier);
-    }
 
     /**
      * Dapatkan geometri dengan id tertentu.
@@ -193,19 +300,25 @@ class Geometry {
      * @param {string} message Pesan geometri
      * @param {string} key Key geometri
      * @param {THREE.Vector3} position Posisi geometri
-     * @param {THREE.Color} color Warna geometri
+     * @param {THREE.Color} col Warna geometri
      */
-    constructor(name, message, key=null, position=null, color=null){
+    constructor(name, message, key=null, position=null, col=null){
         this.name = name;
         this.message = message;
         this.id = Geometry.Count;
         this.key = key || this.id.toString();
+        this.text = TextGeometry(this.name);
         this.#object = new THREE.Object3D();
+        this.pivot = new THREE.Object3D();
         this.setPosition(position || new THREE.Vector3(0,0,0));
+        this.pivot.add(this.text);
+        this.text.position.set(Geometry.TextOffset.x, Geometry.TextOffset.y, Geometry.TextOffset.z);
+        scene.add(this.pivot);
         this.setEulerRotation(Math.random(), Math.random(), Math.random());
-        this.setColor(color || new THREE.Color(0xfff));
+        this.setColor(col || color.setHex( Math.random() * 0xffffff ));
         Geometry.Instances.push(this);
         Geometry.Count++;
+        Geometry.Master.count = Geometry.Count;
     }
 
     /**
@@ -228,6 +341,7 @@ class Geometry {
             this.#object.position.set(v, y, z);
         }
         this.#object.updateMatrix();
+        this.pivot.position.copy(this.#object.position);
         Geometry.Master.setMatrixAt(this.id, this.#object.matrix);
         Geometry.Master.instanceMatrix.needsUpdate = true;
     }
@@ -261,8 +375,8 @@ class Geometry {
      * @param {THREE.Color} color
      */
     setColor(color){
-        this.color = color;
-        Geometry.Master.setColorAt(this.id, this.color);
+        //this.color = color;
+        Geometry.Master.setColorAt(this.id, color);
         Geometry.Master.instanceColor.needsUpdate = true;
     }
 }
@@ -271,13 +385,13 @@ init();
 animate();
 
 function init() {
-    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 20000);
-    camera.position.set( 50, 50, 50 );
+    camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 50000);
+    camera.position.set( 250, 250, 250 );
     camera.lookAt( 0, 0, 0 );
 
     scene = new THREE.Scene();
 
-    const bgeom = new THREE.SphereBufferGeometry(10000, 60, 40);
+    const bgeom = new THREE.SphereBufferGeometry(25000, 60, 40);
     bgeom.scale(-1, 1, 1);
     const bgtex = new THREE.TextureLoader().load('stars.jpg');
     const bgmat = new THREE.MeshBasicMaterial({ map: bgtex });
@@ -292,6 +406,7 @@ function init() {
     light2.position.set( -1, -1.5, -1 );
     scene.add( light2 );
 
+    Geometry.Master.setColorAt(-1, color.setHex( Math.random() * 0xffffff )); //required to fill instanceColor
     scene.add( Geometry.Master );
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -301,19 +416,22 @@ function init() {
 
     const controlsdom = document.getElementById("controls");
     let controls = new OrbitControls( camera, controlsdom );
-    controls.minDistance = 0;
-    controls.maxDistance = 200;
+    controls.minDistance = 100;
+    controls.maxDistance = 1200;
     controls.enablePan = false;
 
-    window.addEventListener( 'resize', onWindowResize, false );
-    controlsdom.addEventListener( 'mousemove', onMouseMove, false );
-    controlsdom.addEventListener( 'touchmove', onTouchMove, false );
+    window.addEventListener('resize', onWindowResize, false );
+    controlsdom.addEventListener('mousemove', onMouseMove, false );
+    controlsdom.addEventListener('click', (ev)=>onSelectGeometry(ev, true), false );
+    controlsdom.addEventListener('touchstart', (ev)=>onSelectGeometry(ev, false), false );
 }
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize( window.innerWidth, window.innerHeight );
+    if(infobar.status)
+        infobar.panel.style.transform = `translateX(-${getComputedStyle(infobar.panel).width})`;
 }
 
 function onMouseMove( event ) {
@@ -326,17 +444,24 @@ function onMouseMove( event ) {
 }
 
 /**
- * OnTouchEvent
+ * On Select Geometry
  * @param {TouchEvent} event Touch Event
  */
-function onTouchMove(event){
+function onSelectGeometry(event, isMouse){
     event.preventDefault();
-    let t = event.touches[0];
-    mouseScreen.x = t.clientX;
-    mouseScreen.y = t.clientY;
-    mouseDirty = true;
-    mouse.x = ( t.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( t.clientY / window.innerHeight ) * 2 + 1;
+    raycaster.setFromCamera({
+        x: ( (isMouse?event.clientX:event.touches[0].clientX) / window.innerWidth ) * 2 - 1,
+        y: - ( (isMouse?event.clientY:event.touches[0].clientY) / window.innerHeight ) * 2 + 1
+    }, camera);
+    const intersection = raycaster.intersectObject( Geometry.Master );
+    if ( intersection.length > 0 ) {
+        const instanceId = intersection[0].instanceId;
+        const geom = Geometry.GetWithId(instanceId);
+        if(geom){
+            setHarapan(geom.name, geom.message);
+            toggleInfobar(true, "harapan");
+        }
+    }
 }
 
 function animate() {
@@ -395,34 +520,37 @@ function EulerToString(e){
 }
 
 function render() {
-    raycaster.setFromCamera( mouse, camera );
-    const intersection = raycaster.intersectObject( Geometry.Master );
-    if ( intersection.length > 0 ) {
-        const instanceId = intersection[0].instanceId;
-        if (Selected.id != instanceId){
-            Selected.id = instanceId;
-            Selected.geometry = Geometry.GetWithId(instanceId);
-            writeTooltip(Selected.geometry);
-        }
-        if (Selected.geometry != undefined){
-            showTooltip();
-            Selected.geometry.setColor(color.setHex( Math.random() * 0xffffff ));
-        } else
+    if(!(mouseScreen.x == -1 || mouseScreen.y == -1)){
+        raycaster.setFromCamera( mouse, camera );
+        const intersection = raycaster.intersectObject( Geometry.Master );
+        if ( intersection.length > 0 ) {
+            const instanceId = intersection[0].instanceId;
+            if (Selected.id != instanceId){
+                Selected.id = instanceId;
+                Selected.geometry = Geometry.GetWithId(instanceId);
+                writeTooltip(Selected.geometry);
+            }
+            if (Selected.geometry != undefined){
+                showTooltip();
+                //Geometry.Master.setColorAt(Selected.id, color.setHex( Math.random() * 0xffffff ));
+                //Geometry.Master.instanceColor.needsUpdate = true;
+                Selected.geometry.setColor(color.setHex( Math.random() * 0xffffff ));
+            } else
+                hideTooltip();
+        } else {
             hideTooltip();
-    } else {
-        hideTooltip();
+        }
+        info.innerText = `Position: ${VectorToString(camera.position)} | Rotation: ${EulerToString(camera.rotation)} | Mouse: (${mouseScreen.x.toFixed(0)}, ${mouseScreen.y.toFixed(0)})`;
     }
     
     let delta = Clock.getDelta()*0.5;
-    
     Geometry.Instances.map((val)=>{
         let r = val.getEulerRotation();
         val.setEulerRotation(r.x+delta,r.y+delta,r.z+delta);
+        val.pivot.lookAt(camera.position);
     });
-
-    info.innerText = `Position: ${VectorToString(camera.position)} | Rotation: ${EulerToString(camera.rotation)} | Mouse: (${mouseScreen.x.toFixed(0)}, ${mouseScreen.y.toFixed(0)})`;
     renderer.render( scene, camera );
 
 }
 
-//export {Geometry, Clock, raycaster, scene, renderer, msgDbRef, camera};
+export {Geometry, Clock, raycaster, scene, renderer, msgDbRef, camera};
