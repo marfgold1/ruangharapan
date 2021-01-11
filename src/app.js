@@ -14,7 +14,19 @@ const firebaseConfig = {
 };
 var app = firebase.initializeApp(firebaseConfig);
 var db = app.database();
-var msgDbRef = db.ref('messages');
+const query = new URLSearchParams(window.location.search);
+var roomslug;
+if(query.has("room")){
+    roomslug = query.get("room").match('^[a-zA-Z0-9]+$');
+    roomslug = (roomslug == null? "messages": roomslug[0]);
+} else {
+    roomslug = "messages";
+    msgDbRef = db.ref("messages");
+    document.getElementById("room-slug").innerText = "Utama";
+}
+var msgDbRef = db.ref(roomslug);
+document.getElementById("room-slug").innerText = (roomslug == "messages"? "Utama":roomslug);
+
 function addMessage(data){
     console.log(data.name);
     if(!data.name.match('^[A-Za-z0-9 ]+$')){
@@ -504,21 +516,6 @@ var Selected = {
     id: -1
 };
 
-/**
- * Representasi vektor dalam string (X, Y, Z) dengan 2 digit dibelakang koma
- * @param {THREE.Vector3} v Vektor yang ingin dijadikan string
- */
-function VectorToString(v){
-    return `(${v.x.toFixed(2)}, ${v.y.toFixed(2)}, ${v.z.toFixed(2)})`;
-};
-/**
- * Representasi euler dalam string (X, Y, Z) dengan 2 digit dibelakang koma
- * @param {THREE.Euler} e Euler yang ingin dijadikan string
- */
-function EulerToString(e){
-    return `(${THREE.MathUtils.radToDeg(e.x).toFixed(2)}, ${THREE.MathUtils.radToDeg(e.y).toFixed(2)}, ${THREE.MathUtils.radToDeg(e.z).toFixed(2)})`;
-}
-
 function render() {
     if(!(mouseScreen.x == -1 || mouseScreen.y == -1)){
         raycaster.setFromCamera( mouse, camera );
@@ -540,7 +537,6 @@ function render() {
         } else {
             hideTooltip();
         }
-        info.innerText = `Position: ${VectorToString(camera.position)} | Rotation: ${EulerToString(camera.rotation)} | Mouse: (${mouseScreen.x.toFixed(0)}, ${mouseScreen.y.toFixed(0)})`;
     }
     
     let delta = Clock.getDelta()*0.5;
@@ -552,5 +548,3 @@ function render() {
     renderer.render( scene, camera );
 
 }
-
-export {Geometry, Clock, raycaster, scene, renderer, msgDbRef, camera};
